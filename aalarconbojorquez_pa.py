@@ -20,7 +20,7 @@ def main():
 
 
 # ----------------------------------------------------------------------------
-# FUNCTION NAME:     ReadSQLFileInput() d
+# FUNCTION NAME:     ReadSQLFileInput() d a
 # PURPOSE:           This function reads the SQL test file input and parses it
 #                    then returns a list of commands to be exected
 # -----------------------------------------------------------------------------
