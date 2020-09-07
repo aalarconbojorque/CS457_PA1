@@ -6,17 +6,50 @@
 # MODIFICATION HISTORY:
 # Author             Date           Modification(s)
 # ----------------   -----------    ---------------
-# Andy Alarcon       2020-09-06     1.0 .. Created
+# Andy Alarcon       2020-09-06     1.0 .. Created, implemented standard input
+# Andy Alarcon       2020-09-07     1.1 .. implemented line by line input check
 # -----------------------------------------------------------------------------
 
 import sys
 
 
 def main():
-    CommandsList = ReadSQLFileInput()
 
-    for line in CommandsList:
-        print(line)
+    #StandardInput = False
+    CommandsList = []
+
+    #There is NOT standard input file attached
+    if sys.stdin.isatty():
+        LineInputCommand = input("-->")
+        CommandsList.append(LineInputCommand)
+
+    #There is a standard input file attached
+    else:
+        #Returns a list of commands to execute
+        CommandsList = ReadSQLFileInput()
+        #StandardInput = True
+   
+    #With the full CommandsList Process the first command and then delete the first one after it is done
+    #CREATE DATABASE db_1;
+
+    while CommandsList :
+        ExecuteCommand(CommandsList[0])
+        CommandsList.pop(0)
+    
+    print("All done")
+
+    
+
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     ExecuteCommand(str)
+# PURPOSE:           This function reads the command, parses it and executes
+#                    the command
+# -----------------------------------------------------------------------------
+def ExecuteCommand(commandLine):
+    print(commandLine)
+
+
 
 
 # ----------------------------------------------------------------------------
