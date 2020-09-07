@@ -8,6 +8,7 @@
 # ----------------   -----------    ---------------
 # Andy Alarcon       2020-09-06     1.0 .. Created, implemented standard input
 # Andy Alarcon       2020-09-07     1.1 .. implemented line by line input check
+#                                          and first iteration of parsing check
 # -----------------------------------------------------------------------------
 
 import sys
@@ -53,7 +54,7 @@ def ExecuteCommand(commandLine):
     commandLine = ParseCommandByWord(commandLine)
 
     # Use each parsed keyword and execute the corresponding command
-    
+
     if commandLine[0].lower() == "create":
 
         if commandLine[1].lower() == "database":
