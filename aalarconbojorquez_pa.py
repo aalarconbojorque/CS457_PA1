@@ -15,6 +15,8 @@ import sys
 import re
 import os
 
+#Global variable to keep track of the current DB in use
+GlobalCurrentDirectory = ""
 
 def main():
 
@@ -123,7 +125,7 @@ def ExecuteCommand(commandLine):
         elif commandLine[0].lower() == "use":
              #Check the remaining ones and execute or display an error
             try:
-                print("USE Database -> " + commandLine[1])
+                    UseDatabase(commandLine[1])
             except:
                 print(argumentErrorMessage)
         #If the first keyword is select
@@ -142,30 +144,83 @@ def ExecuteCommand(commandLine):
             print("!Failed command : '" + commandLine[0] + "' not recognized")
 
 
+
+# ----------------------------------------------------------------------------
+# FUNCTION NAME:     UseDatabase(DBname)
+# PURPOSE:           This function executes the database use command
+# -----------------------------------------------------------------------------
+def UseDatabase(DBname):
+    # Check if the folder exists
+        if os.path.exists(DBname):
+            global GlobalCurrentDirectory
+            GlobalCurrentDirectory = DBname
+            print("Using database " + DBname + ".")
+        else:
+            print("!Failed to use database " + DBname + " because it does not exist.")
+
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     ParseCommandByPara()
 # PURPOSE:           This function parses a string for table creation, returns a list
 # -----------------------------------------------------------------------------
 def ParseCommandByPara(line):
 
+    # Parse Everything within (.....); Then split by comma
+    line = re.search(r'\((.*?)\);', line).group(1)
+    line = line.split(',')
+
+    # Remove any leading whitespaces
+    for i, _ in enumerate(line):
+        line[i] = line[i].strip()
+
     return line
+    
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     CreateTable(tblName, OGCommandLine)
 # PURPOSE:           This function executes the database creation command
 # -----------------------------------------------------------------------------
 def CreateTable(tblName, OGCommandLine):
-    #First check if the DB name is invalid
-    if tblName == ";" or not tblName :
-        print("!Failed table name was invalid")
 
+    global GlobalCurrentDirectory
+    if not GlobalCurrentDirectory :
+        print("!Failed a database is currently not in use")
     else :
-        # Check if the table/file exists
-        if not os.path.exists(tblName):
-            file = open(tblName, "w") 
+
+        #Try and Parse the string "(arg arg arg);""
+        argumentsParsed = True
+        try:
             argumentList = ParseCommandByPara(OGCommandLine)
-            file.close() 
-        else:
-            print("!Failed to create table " + tblName + " because it already exists.")
+
+            #Check the number of args must be >= 2
+            argumentsCheckList = []
+            for i, _ in enumerate(argumentList):
+                argumentsCheckList.append(argumentList[i].split())
+                if len(argumentsCheckList[i]) < 2 :
+                    argumentsParsed = False
+
+        #If it fails trigger flag
+        except:
+            argumentsParsed = False
+
+                    
+        #Check if tblName is invalid or flag has been triggered
+        if tblName == "(" or not tblName or argumentsParsed == False:
+            print("!Failed a syntax error occured")
+
+        else :
+            # Check if the table/file exists
+            if not os.path.exists(GlobalCurrentDirectory + "/" + tblName):
+              
+                file = open(GlobalCurrentDirectory + "/" + tblName, "w") 
+                print("Table " + tblName + " created.")
+               
+                for i, _ in enumerate(argumentList):
+                    file.write(argumentList[i] + " | ")
+
+                file.close() 
+            else:
+                print("!Failed to create table " + tblName + " because it already exists.")
+
+    
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     CreateDatabase(DBname)
 # PURPOSE:           This function executes the database creation command
