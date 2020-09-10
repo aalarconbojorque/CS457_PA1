@@ -2,6 +2,7 @@
 # FILE NAME:         aalarconbojorquez_pa.py
 # USAGE:             python3 aalarconbojorquez_pa.py < PA1_test.sql
 # NOTES:             Runs using the standards file input {filename} < PA1_test.sql
+#                    or line by line input python3 aalarconbojorquez_pa.py
 #
 # MODIFICATION HISTORY:
 # Author             Date           Modification(s)
@@ -9,6 +10,9 @@
 # Andy Alarcon       2020-09-06     1.0 .. Created, implemented standard input
 # Andy Alarcon       2020-09-07     1.1 .. implemented line by line input check
 #                                          and first iteration of parsing check
+# Andy Alarcon       2020-09-09     1.2 .. Added DB and table creation, added drop
+#                                          for DB and table
+# Andy Alarcon       2020-09-10     1.3 .. Added table query
 # -----------------------------------------------------------------------------
 
 import sys
@@ -43,18 +47,19 @@ def main():
         StandardInputisActive = True
 
     # With the full CommandsList Process the first command and then delete the first one after it is done
-
+    # Standard input
     if StandardInputisActive:
         while CommandsList[0].lower() != ".exit":
             ExecuteCommand(CommandsList[0])
             CommandsList.pop(0)
 
+    #Line by Line input
     else:
         while LineInputCommand.lower() != ".exit":
             ExecuteCommand(LineInputCommand)
             LineInputCommand = str(input("--> "))
 
-    print("All done")
+    print("All done.")
 
 
 # ----------------------------------------------------------------------------
@@ -62,6 +67,8 @@ def main():
 # PURPOSE:           This function reads a single command, parses it and executes
 #                    the command
 # -----------------------------------------------------------------------------
+
+
 def ExecuteCommand(commandLine):
 
     unalteredCommandLine = commandLine
@@ -112,7 +119,6 @@ def ExecuteCommand(commandLine):
             # Check the remaining ones and execute or display an error
             try:
                 if commandLine[1].lower() == "table":
-                    print("ALTER Table -> " + commandLine[2])
                     AlterTable(unalteredCommandLine, commandLine[2:])
                 else:
                     print("!Failed ALTER command argumments not recognized")
@@ -142,24 +148,42 @@ def ExecuteCommand(commandLine):
         # If the first keyword was not recognized above display an error
         else:
             print("!Failed command : '" + commandLine[0] + "' not recognized")
-
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     AlterTable(tblName)
 # PURPOSE:           This function executes the alter table command
 # -----------------------------------------------------------------------------
+
+
 def AlterTable(OGcommandLine, commandsList):
 
-    line = OGcommandLine.lower() 
+    if len(commandsList) > 4:
+        tblName = commandsList[0]
+        # Find the text between the command ADD and ; for variable argument
+        line = OGcommandLine.lower()
+        line = re.search(r'add\s\s*(.*)\s*;', line).group(1)
 
-    # Find the text between the command ADD and ;
-    line = re.search(r'add\s\s*(.*)\s*;', line).group(1)
+        global GlobalCurrentDirectory
+        if not GlobalCurrentDirectory:
+            print("!Failed a database is currently not in use")
+        else:
+            # Check if the table/file exists
+            if os.path.exists(GlobalCurrentDirectory + "/" + tblName):
+                file = open(GlobalCurrentDirectory + "/" + tblName, "a")
+                file.write(" | " + line)
+                file.close()
+                print("Table " + tblName + " modified.")
+            else:
+                print("!Failed to modify table " +
+                      tblName + " because it does not exist.")
 
-    print(line)
-
+    else:
+        print("!Failed invalid number of arguments")
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DropTable(tblName)
 # PURPOSE:           This function executes the drop table command
 # -----------------------------------------------------------------------------
+
+
 def DropTable(tblName):
     global GlobalCurrentDirectory
     if not GlobalCurrentDirectory:
@@ -167,31 +191,33 @@ def DropTable(tblName):
     else:
         # Check if the table/file exists
         if os.path.exists(GlobalCurrentDirectory + "/" + tblName):
-            try: 
-                os.remove(GlobalCurrentDirectory + "/" + tblName) 
-                print("Table " + tblName + " deleted." ) 
-            except : 
-                print("!Failed to delete the table due to an error") 
+            try:
+                os.remove(GlobalCurrentDirectory + "/" + tblName)
+                print("Table " + tblName + " deleted.")
+            except:
+                print("!Failed to delete the table due to an error")
         else:
-            print("!Failed to delete " + tblName + " because it does not exist.")
-
+            print("!Failed to delete " + tblName +
+                  " because it does not exist.")
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     DropDatabase(DBname)
 # PURPOSE:           This function executes the drop database command
 # -----------------------------------------------------------------------------
+
+
 def DropDatabase(DBname):
     # Check if the folder exists
-        if os.path.exists(DBname):
+    if os.path.exists(DBname):
 
-            try: 
-                shutil.rmtree(DBname) 
-                print("Database " + DBname + " deleted." ) 
-            except : 
-                print("!Failed to delete the database due to an error") 
+        try:
+            # Remove directory
+            shutil.rmtree(DBname)
+            print("Database " + DBname + " deleted.")
+        except:
+            print("!Failed to delete the database due to an error")
 
-          
-        else:
-            print("!Failed to delete " + DBname + " because it does not exist.")
+    else:
+        print("!Failed to delete " + DBname + " because it does not exist.")
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     SelectCommand(tblName)
 # PURPOSE:           This function executes the select command
@@ -214,7 +240,6 @@ def SelectCommand(tblName):
             LinesRead = file.readline()
             print(LinesRead)
             file.close()
-
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     UseDatabase(DBname)
 # PURPOSE:           This function executes the database use command
@@ -230,7 +255,6 @@ def UseDatabase(DBname):
     else:
         print("!Failed to use database " + DBname +
               " because it does not exist.")
-
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     ParseCommandByPara()
 # PURPOSE:           This function parses a string for table creation, returns a list
@@ -248,7 +272,6 @@ def ParseCommandByPara(line):
         line[i] = line[i].strip()
 
     return line
-
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     CreateTable(tblName, OGCommandLine)
 # PURPOSE:           This function executes the database creation command
@@ -300,7 +323,6 @@ def CreateTable(tblName, OGCommandLine):
             else:
                 print("!Failed to create table " +
                       tblName + " because it already exists.")
-
 # ----------------------------------------------------------------------------
 # FUNCTION NAME:     CreateDatabase(DBname)
 # PURPOSE:           This function executes the database creation command
