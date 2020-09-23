@@ -7,12 +7,14 @@
 # MODIFICATION HISTORY:
 # Author             Date           Modification(s)
 # ----------------   -----------    ---------------
-# Andy Alarcon       2020-09-06     1.0 .. Created, implemented standard input
-# Andy Alarcon       2020-09-07     1.1 .. implemented line by line input check
+# Andy Alarcon       2020-09-09     1.0 .. Created, implemented standard input
+# Andy Alarcon       2020-09-11     1.1 .. implemented line by line input check
 #                                          and first iteration of parsing check
-# Andy Alarcon       2020-09-09     1.2 .. Added DB and table creation, added drop
+# Andy Alarcon       2020-09-13     1.2 .. Added DB and table creation, added drop
 #                                          for DB and table
-# Andy Alarcon       2020-09-10     1.3 .. Added table query
+# Andy Alarcon       2020-09-15     1.3 .. Added table query feature
+# Andy Alarcon       2020-09-18     1.4 .. Added table update feature
+# Andy Alarcon       2020-09-21     1.5 .. Fixed a parsing bug
 # -----------------------------------------------------------------------------
 
 import sys
@@ -168,6 +170,7 @@ def AlterTable(OGcommandLine, commandsList):
         else:
             # Check if the table/file exists
             if os.path.exists(GlobalCurrentDirectory + "/" + tblName):
+                # append the add argument
                 file = open(GlobalCurrentDirectory + "/" + tblName, "a")
                 file.write(" | " + line)
                 file.close()
